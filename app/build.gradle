@@ -18,6 +18,8 @@ import groovy.xml.MarkupBuilder
 
 plugins {
     id 'com.android.application'
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
 }
 
 def twaManifest = [
@@ -57,8 +59,8 @@ android {
         applicationId "org.homeletter.app"
         minSdkVersion 21
         targetSdkVersion 35
-        versionCode 5
-        versionName "5"
+        versionCode 7
+        versionName "7"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -150,6 +152,20 @@ android {
 
         
     }
+    buildFeatures {
+        buildConfig true
+    }
+    flavorDimensions "env"
+    productFlavors {
+        dev {
+            dimension "env"
+            buildConfigField "String", "API_BASE_URL", '"http://10.0.2.2:3000"'
+        }
+        prod {
+            dimension "env"
+            buildConfigField "String", "API_BASE_URL", '"https://homeletter2-0-frontend.vercel.app"'
+        }
+    }
     signingConfigs {
         release {
             storeFile file(RELEASE_STORE_FILE)
@@ -166,11 +182,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     lintOptions {
         checkReleaseBuilds false
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+    buildFeatures {
+        compose true
     }
 }
 
@@ -212,13 +234,31 @@ task generateShorcutsFile {
 preBuild.dependsOn(generateShorcutsFile)
 
 repositories {
-    
+    google()
+    mavenCentral()
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     
-        implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
-        implementation 'com.google.android.gms:play-services-ads:23.2.0'
-    
+        // 已改為原生，不再需要 TWA 與廣告 SDK
+    implementation libs.core.ktx
+    implementation libs.lifecycle.runtime.ktx
+    implementation libs.activity.compose
+    implementation platform(libs.compose.bom)
+    implementation libs.ui
+    implementation libs.ui.graphics
+    implementation libs.ui.tooling.preview
+    implementation libs.material3
+    // 網路與協程
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation platform(libs.compose.bom)
+    androidTestImplementation libs.ui.test.junit4
+    debugImplementation libs.ui.tooling
+    debugImplementation libs.ui.test.manifest
+
 }

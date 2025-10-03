@@ -29,6 +29,7 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+// 移除頂層 plugins 別名宣告，以避免與模組級 plugins DSL 的版本解析互相干擾
 
 allprojects {
     repositories {
