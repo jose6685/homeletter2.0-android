@@ -6,7 +6,37 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-app.use(cors());
+// 強化 CORS 設定：允許正式前端、localhost、Vercel 預覽，以及 TWA/部分情況下的 null Origin
+const allowedOrigins = [
+  'https://homeletter2-0-frontend.vercel.app',
+  'http://localhost:3000'
+];
+app.use(cors({
+  origin: function(origin, callback){
+    try {
+      // 無 Origin（例如 TWA、某些 WebView 或同源直接請求）→ 允許
+      if (!origin) return callback(null, true);
+      // 明確允許清單
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // 動態允許 Vercel 預覽域名（*.vercel.app）
+      const hostname = new URL(origin).hostname;
+      if (/\.vercel\.app$/.test(hostname)) return callback(null, true);
+    } catch {}
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET','POST','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Accept'],
+  optionsSuccessStatus: 200
+}));
+// API 請求簡易日誌（協助觀察 Origin 與路由）
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    const o = req.headers.origin || 'NO_ORIGIN';
+    console.log(`[req] ${req.method} ${req.path} origin=${o}`);
+  }
+  next();
+});
 app.use(express.json());
 app.use(express.static("."));
 
@@ -29,6 +59,9 @@ app.get('/favicon.ico', (req, res) => {
 let client = null;
 if (process.env.OPENAI_API_KEY) {
   client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  console.log('[boot] OpenAI API key detected: generation enabled');
+} else {
+  console.log('[boot] No OPENAI_API_KEY: running in demo mode');
 }
 const PORT = process.env.PORT || 3000;
 const MAILBOX_PATH = path.join(__dirname, "mailbox.json");
