@@ -11,24 +11,39 @@ const allowedOrigins = [
   'https://homeletter2-0-frontend.vercel.app',
   'http://localhost:3000'
 ];
-app.use(cors({
-  origin: function(origin, callback){
-    try {
-      // 無 Origin（例如 TWA、某些 WebView 或同源直接請求）→ 允許
-      if (!origin) return callback(null, true);
-      // 明確允許清單
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      // 動態允許 Vercel 預覽域名（*.vercel.app）
-      const hostname = new URL(origin).hostname;
-      if (/\.vercel\.app$/.test(hostname)) return callback(null, true);
-    } catch {}
-    return callback(null, false);
-  },
-  credentials: true,
-  methods: ['GET','POST','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Accept'],
-  optionsSuccessStatus: 200
-}));
+// 環境開關：測試階段允許所有來源（CORS_ALLOW_ALL=1/true/yes/on/*）
+const CORS_ALLOW_ALL = String(process.env.CORS_ALLOW_ALL || '').toLowerCase();
+const allowAll = ['1','true','yes','on','*'].includes(CORS_ALLOW_ALL);
+if (allowAll) {
+  app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET','POST','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Accept'],
+    optionsSuccessStatus: 200
+  }));
+} else {
+  app.use(cors({
+    origin: function(origin, callback){
+      try {
+        // 無 Origin（例如 TWA、某些 WebView 或同源直接請求）→ 允許
+        if (!origin) return callback(null, true);
+        // TWA/部分 WebView 以字串 'null' 作為 Origin → 允許
+        if (origin === 'null') return callback(null, true);
+        // 明確允許清單
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        // 動態允許 Vercel 預覽域名（*.vercel.app）
+        const hostname = new URL(origin).hostname;
+        if (/\.vercel\.app$/.test(hostname)) return callback(null, true);
+      } catch {}
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ['GET','POST','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Accept'],
+    optionsSuccessStatus: 200
+  }));
+}
 // API 請求簡易日誌（協助觀察 Origin 與路由）
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
