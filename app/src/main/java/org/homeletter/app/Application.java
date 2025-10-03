@@ -26,6 +26,19 @@ public class Application extends android.app.Application {
       super.onCreate();
       try {
           com.google.android.gms.ads.MobileAds.initialize(this);
+          // 在開發環境使用測試設備配置，避免無填充造成誤判
+          try {
+              java.util.List<String> testIds = java.util.Arrays.asList(
+                      com.google.android.gms.ads.AdRequest.DEVICE_ID_EMULATOR
+              );
+              com.google.android.gms.ads.RequestConfiguration config =
+                      new com.google.android.gms.ads.RequestConfiguration.Builder()
+                              .setTestDeviceIds(testIds)
+                              .build();
+              com.google.android.gms.ads.MobileAds.setRequestConfiguration(config);
+          } catch (Throwable t2) {
+              android.util.Log.w("HomeLetter", "MobileAds request configuration failed", t2);
+          }
       } catch (Throwable t) {
           android.util.Log.w("HomeLetter", "MobileAds init failed", t);
       }
