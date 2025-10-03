@@ -22,8 +22,10 @@ import com.google.android.gms.ads.FullScreenContentCallback;
 public class RewardedAdActivity extends AppCompatActivity {
 
     private static final String TAG = "HomeLetterRewarded";
-    private static final String AD_UNIT_ID = "ca-app-pub-9507923681356448/8178860305";
+    private static final String PROD_AD_UNIT_ID = "ca-app-pub-9507923681356448/8178860305";
+    private static final String TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"; // 官方測試單元
     private RewardedAd rewardedAd = null;
+    private boolean earnedReward = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,27 +35,33 @@ public class RewardedAdActivity extends AppCompatActivity {
         } catch (Throwable t) {
             Log.w(TAG, "MobileAds.initialize threw", t);
         }
-        loadAndShow();
+        loadAndShow(PROD_AD_UNIT_ID, true);
     }
 
-    private void loadAndShow() {
+    private void loadAndShow(final String adUnitId, final boolean allowTestFallback) {
         AdRequest request = new AdRequest.Builder().build();
         RewardedAd.load(
                 this,
-                AD_UNIT_ID,
+                adUnitId,
                 request,
                 new RewardedAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull RewardedAd ad) {
                         rewardedAd = ad;
-                        Log.d(TAG, "Rewarded loaded");
+                        Log.d(TAG, "Rewarded loaded: " + adUnitId);
                         setCallbacksAndShow(ad);
                     }
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        Log.w(TAG, "Rewarded failed to load: " + loadAdError);
-                        finish();
+                        Log.w(TAG, "Rewarded failed to load (" + adUnitId + "): " + loadAdError);
+                        if (allowTestFallback && TEST_AD_UNIT_ID != null && !TEST_AD_UNIT_ID.equals(adUnitId)) {
+                            Log.w(TAG, "Retry with AdMob test ad unit");
+                            loadAndShow(TEST_AD_UNIT_ID, false);
+                        } else {
+                            navigateBackWithRewardFlag(false);
+                            finish();
+                        }
                     }
                 }
         );
@@ -68,8 +76,8 @@ public class RewardedAdActivity extends AppCompatActivity {
 
             @Override
             public void onAdDismissedFullScreenContent() {
-                Log.d(TAG, "Rewarded dismissed");
-                navigateBackWithRewardFlag(false);
+                Log.d(TAG, "Rewarded dismissed, earned=" + earnedReward);
+                navigateBackWithRewardFlag(earnedReward);
                 rewardedAd = null;
                 finish();
             }
@@ -92,7 +100,7 @@ public class RewardedAdActivity extends AppCompatActivity {
             @Override
             public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
                 Log.d(TAG, "User earned reward: " + rewardItem.getAmount());
-                navigateBackWithRewardFlag(true);
+                earnedReward = true;
             }
         });
     }
