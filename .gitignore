@@ -1,0 +1,20 @@
+﻿# Gradle
+.gradle/
+# Build outputs
+/build/
+/app/build/
+/app/release/
+/app/debug/
+# Local settings
+local.properties
+# IDE
+.idea/
+*.iml
+# Keystores and certs
+*.keystore
+upload_cert.pem
+upload.keystore
+android.keystore
+homeletter-release.keystore
+# Misc
+manifest-checksum.txt
