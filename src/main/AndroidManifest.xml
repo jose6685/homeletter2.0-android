@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".Application"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/appName"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/appName"
+            android:theme="@style/Theme.MyApplication">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".MailboxDetailActivity"
+            android:exported="false"
+            android:label="詳情"
+            android:theme="@style/Theme.MyApplication" />
+
+        <!-- 移除 TWA 與廣告相關 Meta-data -->
+
+        <!-- 移除 TWA 管理資料活動 -->
+        <!-- 移除 TWA 啟動活動 -->
+        <!-- 移除 TWA Fallback/WebView 相關活動 -->
+
+        <!-- 移除 TWA 檔案提供者 -->
+
+        <!-- 移除 TWA DelegationService -->
+
+        <!-- 移除 TWA 通知權限請求與原生廣告活動 -->
+    </application>
+
+</manifest>
