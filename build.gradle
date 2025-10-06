@@ -166,19 +166,35 @@ android {
             buildConfigField "String", "API_BASE_URL", '"https://homeletter2-0-frontend.vercel.app"'
         }
     }
-    signingConfigs {
-        release {
-            storeFile file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+    // Guard release signing so debug/dev builds don't evaluate missing properties
+    def hasReleaseSigning = project.hasProperty('RELEASE_STORE_FILE') &&
+            project.hasProperty('RELEASE_STORE_PASSWORD') &&
+            project.hasProperty('RELEASE_KEY_ALIAS') &&
+            project.hasProperty('RELEASE_KEY_PASSWORD')
+
+    if (hasReleaseSigning) {
+        signingConfigs {
+            release {
+                storeFile file(RELEASE_STORE_FILE)
+                storePassword RELEASE_STORE_PASSWORD
+                keyAlias RELEASE_KEY_ALIAS
+                keyPassword RELEASE_KEY_PASSWORD
+            }
         }
     }
+
     buildTypes {
         release {
             minifyEnabled true
-            // Apply release signing config
-            signingConfig signingConfigs.release
+        }
+    }
+
+    if (hasReleaseSigning) {
+        buildTypes {
+            release {
+                // Apply release signing config only when properties exist
+                signingConfig signingConfigs.release
+            }
         }
     }
     compileOptions {
