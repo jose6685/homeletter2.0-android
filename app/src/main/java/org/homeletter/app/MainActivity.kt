@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.homeletter.app.api.ApiClient
 import org.homeletter.app.api.MailItem
+import org.homeletter.app.storage.LocalMailbox
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -46,8 +48,13 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
 
             LaunchedEffect(Unit) {
+                // 先載入本地備援信箱，再嘗試拉取後端，成功後覆蓋並保存本地
+                val local = LocalMailbox.load(context)
+                if (local.isNotEmpty()) {
+                    mailbox = local
+                }
                 runCatching { api.getMailbox() }
-                    .onSuccess { mailbox = it }
+                    .onSuccess { mailbox = it; LocalMailbox.save(context, it) }
                     .onFailure { error = it.message }
             }
 
@@ -56,7 +63,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     topBar = { TopAppBar(title = { Text(text = "天父的信") }) }
                 ) { innerPadding ->
-                    Column(Modifier.padding(innerPadding).fillMaxSize()) {
+                    Column(
+                        Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .imePadding()
+                    ) {
                         Text(
                             text = "Android 原生版（抽卡生成 + 入信箱）",
                             style = MaterialTheme.typography.bodyMedium,
@@ -72,12 +84,24 @@ class MainActivity : ComponentActivity() {
                                 if (!generating) {
                                     scope.launch {
                                         generating = true
-                                        runCatching {
+                                        try {
                                             val result = api.generate(theme)
-                                            api.createMail(title = theme.ifBlank { "主題信" }, content = result.raw)
-                                        }.onSuccess { created ->
+                                            val title = theme.ifBlank { "主題信" }
+                                            val created = runCatching {
+                                                api.createMail(title = title, content = result.raw)
+                                            }.getOrElse { e ->
+                                                // 後端不可用時，改為本地保存
+                                                error = e.message
+                                                MailItem(
+                                                    id = "",
+                                                    title = title,
+                                                    content = result.raw,
+                                                    createdAt = System.currentTimeMillis()
+                                                )
+                                            }
                                             mailbox = listOf(created) + mailbox
-                                        }.onFailure { e ->
+                                            LocalMailbox.append(context, created)
+                                        } catch (e: Throwable) {
                                             error = e.message
                                         }
                                         generating = false
@@ -88,7 +112,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Text(text = if (generating) "生成中…" else "抽卡生成並入信箱")
                         }
-                        LazyColumn(modifier = Modifier.padding(top = 12.dp)) {
+                        LazyColumn(modifier = Modifier.padding(top = 12.dp).weight(1f)) {
                             items(mailbox) { item ->
                                 Text(
                                     text = item.title,
