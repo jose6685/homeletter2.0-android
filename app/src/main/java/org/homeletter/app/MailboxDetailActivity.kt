@@ -4,8 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import androidx.activity.ComponentActivity
+
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -19,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.background
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import java.util.Locale
@@ -63,24 +67,20 @@ private fun DetailContent(title: String, content: String, modifier: Modifier = M
         }
     }
 
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge)
+    Column(modifier = modifier.fillMaxSize().padding(16.dp).background(Color.White.copy(alpha = 0.1f))) {
+        Text(text = title, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = content, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = content,
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+            modifier = Modifier.padding(8.dp)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
             tts?.speak(content, TextToSpeech.QUEUE_FLUSH, null, "mail_read")
-        }) { Text("朗讀") }
+        }) { Text("\u25B6") }
 
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
-            val share = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, title)
-                putExtra(Intent.EXTRA_TEXT, "$title\n\n$content")
-            }
-            context.startActivity(Intent.createChooser(share, "分享信件"))
-        }) { Text("分享") }
+        // 移除分享功能以與 Web 版一致（不提供 Facebook / LINE 分享）
     }
 }

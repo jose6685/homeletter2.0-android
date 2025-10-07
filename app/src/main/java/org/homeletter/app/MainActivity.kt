@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = { TopAppBar(title = { Text(text = "天父的信") }) }
+                    topBar = { TopAppBar(title = { Text(text = "回顧天父的信") }) }
                 ) { innerPadding ->
                     Column(
                         Modifier
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                             .imePadding()
                     ) {
                         Text(
-                            text = "Android 原生版（抽卡生成 + 入信箱）",
+                            text = "Android 原生版（抽卡生成 + 回顧天父的信）",
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         OutlinedTextField(

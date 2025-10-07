@@ -1,4 +1,4 @@
-﻿# Gradle
+# Gradle
 .gradle/
 # Build outputs
 /build/
@@ -18,3 +18,9 @@ android.keystore
 homeletter-release.keystore
 # Misc
 manifest-checksum.txt
+# Exclude non-Android subprojects from this repo
+frontend/
+backend/
+homeletter-twa/
+android-platform-tools/
+*.zip
