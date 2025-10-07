@@ -88,7 +88,13 @@ class MainActivity : ComponentActivity() {
                                             val result = api.generate(theme)
                                             val title = theme.ifBlank { "主題信" }
                                             val created = runCatching {
-                                                api.createMail(title = title, content = result.raw)
+                                                api.createMail(
+                                                    title = title,
+                                                    content = result.raw,
+                                                    directions = result.directions,
+                                                    verses = result.verses,
+                                                    actions = result.actions,
+                                                )
                                             }.getOrElse { e ->
                                                 // 後端不可用時，改為本地保存
                                                 error = e.message
@@ -96,6 +102,9 @@ class MainActivity : ComponentActivity() {
                                                     id = "",
                                                     title = title,
                                                     content = result.raw,
+                                                    directions = result.directions,
+                                                    verses = result.verses,
+                                                    actions = result.actions,
                                                     createdAt = System.currentTimeMillis()
                                                 )
                                             }
@@ -111,6 +120,32 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(top = 12.dp)
                         ) {
                             Text(text = if (generating) "生成中…" else "抽卡生成並入信箱")
+                        }
+                        Button(
+                            onClick = {
+                                // 清除本地信箱
+                                LocalMailbox.clear(context)
+                                mailbox = emptyList()
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text(text = "清除本地信箱")
+                        }
+                        Button(
+                            onClick = {
+                                // 手動同步：從後端拉最新並保存本地
+                                scope.launch {
+                                    runCatching { api.getMailbox() }
+                                        .onSuccess {
+                                            mailbox = it
+                                            LocalMailbox.save(context, it)
+                                        }
+                                        .onFailure { error = it.message }
+                                }
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text(text = "手動同步信箱（後端 → 本地）")
                         }
                         LazyColumn(modifier = Modifier.padding(top = 12.dp).weight(1f)) {
                             items(mailbox) { item ->

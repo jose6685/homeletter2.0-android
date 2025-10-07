@@ -163,7 +163,7 @@ android {
         }
         prod {
             dimension "env"
-            buildConfigField "String", "API_BASE_URL", '"https://homeletter2-0-frontend.vercel.app"'
+            buildConfigField "String", "API_BASE_URL", '"https://homeletter2-0-backend.onrender.com"'
         }
     }
     // Guard release signing so debug/dev builds don't evaluate missing properties

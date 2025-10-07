@@ -20,6 +20,9 @@ object LocalMailbox {
                     id = o.optString("id"),
                     title = o.optString("title"),
                     content = o.optString("content"),
+                    directions = o.optString("directions", null),
+                    verses = o.optString("verses", null),
+                    actions = o.optString("actions", null),
                     createdAt = o.optLong("createdAt", System.currentTimeMillis())
                 )
             }
@@ -36,6 +39,9 @@ object LocalMailbox {
                     .put("id", item.id)
                     .put("title", item.title)
                     .put("content", item.content)
+                    .put("directions", item.directions)
+                    .put("verses", item.verses)
+                    .put("actions", item.actions)
                     .put("createdAt", item.createdAt)
             )
         }
@@ -46,5 +52,10 @@ object LocalMailbox {
     fun append(context: Context, item: MailItem) {
         val current = load(context)
         save(context, listOf(item) + current)
+    }
+
+    fun clear(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_MAILBOX, "[]").apply()
     }
 }
