@@ -18,6 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -50,6 +54,7 @@ class MailboxDetailActivity : ComponentActivity() {
 private fun DetailContent(title: String, content: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var tts: TextToSpeech? = null
+    var paused by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         tts = TextToSpeech(context) { status ->
@@ -70,8 +75,15 @@ private fun DetailContent(title: String, content: String, modifier: Modifier = M
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            tts?.speak(content, TextToSpeech.QUEUE_FLUSH, null, "mail_read")
-        }) { Text("朗讀") }
+            // 切換播放/暫停（TextToSpeech 無原生暫停，這裡以 stop 模擬暫停，播放時重新從頭朗讀）
+            if (paused) {
+                tts?.speak(content, TextToSpeech.QUEUE_FLUSH, null, "mail_read")
+                paused = false
+            } else {
+                tts?.stop()
+                paused = true
+            }
+        }) { Text(if (paused) "播放" else "暫停") }
 
         Spacer(modifier = Modifier.height(8.dp))
         Button(onClick = {
