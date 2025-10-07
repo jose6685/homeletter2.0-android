@@ -163,7 +163,7 @@ android {
         }
         prod {
             dimension "env"
-            buildConfigField "String", "API_BASE_URL", '"https://homeletter2-0-frontend.vercel.app"'
+            buildConfigField "String", "API_BASE_URL", '"https://homeletter2-0-backend.onrender.com"'
         }
     }
     // Guard release signing so debug/dev builds don't evaluate missing properties
@@ -257,7 +257,6 @@ repositories {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     
-        // 已改為原生，不再需要 TWA 與廣告 SDK
     implementation libs.core.ktx
     implementation libs.lifecycle.runtime.ktx
     implementation libs.activity.compose

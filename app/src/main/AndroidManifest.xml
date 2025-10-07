@@ -28,18 +28,7 @@
             android:exported="false"
             android:label="詳情"
             android:theme="@style/Theme.MyApplication" />
-
-        <!-- 移除 TWA 與廣告相關 Meta-data -->
-
-        <!-- 移除 TWA 管理資料活動 -->
-        <!-- 移除 TWA 啟動活動 -->
-        <!-- 移除 TWA Fallback/WebView 相關活動 -->
-
-        <!-- 移除 TWA 檔案提供者 -->
-
-        <!-- 移除 TWA DelegationService -->
-
-        <!-- 移除 TWA 通知權限請求與原生廣告活動 -->
+        
     </application>
 
 </manifest>

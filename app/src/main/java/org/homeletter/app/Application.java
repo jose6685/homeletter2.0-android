@@ -19,6 +19,5 @@ public class Application extends android.app.Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    // 已移除廣告初始化，保留乾淨的原生 Application
   }
 }
