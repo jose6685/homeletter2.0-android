@@ -1,3 +1,4 @@
+import androidx.compose.foundation.layout.widthIn
 package org.homeletter.app
 
 import android.content.Intent
@@ -5,14 +6,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -28,10 +38,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import kotlinx.coroutines.launch
 import org.homeletter.app.api.ApiClient
 import org.homeletter.app.api.MailItem
 import org.homeletter.app.storage.LocalMailbox
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.runtime.Composable
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -48,7 +67,6 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
 
             LaunchedEffect(Unit) {
-                // 先載入本地備援信箱，再嘗試拉取後端，成功後覆蓋並保存本地
                 val local = LocalMailbox.load(context)
                 if (local.isNotEmpty()) {
                     mailbox = local
@@ -59,25 +77,35 @@ class MainActivity : ComponentActivity() {
             }
 
             MaterialTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    topBar = { TopAppBar(title = { Text(text = "回顧天父的信") }) }
-                ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp) // 調整內邊距以適應不同螢幕
+                ) {
+
+                    Text(
+                        text = "天父的家書",
+                        color = Color(0xFFFFD700),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+                    )
+
                     Column(
-                        Modifier
-                            .padding(innerPadding)
+                        modifier = Modifier
                             .fillMaxSize()
                             .imePadding()
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "Android 原生版（抽卡生成 + 回顧天父的信）",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
                         OutlinedTextField(
                             value = theme,
                             onValueChange = { theme = it },
                             label = { Text("主題/關鍵字") },
-                            modifier = Modifier.padding(top = 12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 700.dp) // 調整最大寬度以適應不同螢幕
+                                .wrapContentHeight()
                         )
                         Button(
                             onClick = {
@@ -90,7 +118,6 @@ class MainActivity : ComponentActivity() {
                                             val created = runCatching {
                                                 api.createMail(title = title, content = result.raw)
                                             }.getOrElse { e ->
-                                                // 後端不可用時，改為本地保存
                                                 error = e.message
                                                 MailItem(
                                                     id = "",
@@ -108,11 +135,21 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             },
-                            modifier = Modifier.padding(top = 12.dp)
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A5ACD)),
+                            modifier = Modifier
+                                .padding(top = 12.dp)
                         ) {
                             Text(text = if (generating) "生成中…" else "抽卡生成並入信箱")
                         }
-                        LazyColumn(modifier = Modifier.padding(top = 12.dp).weight(1f)) {
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 600.dp) // 調整最大寬度以適應不同螢幕
+                                .weight(1f, fill = false)
+                        ) {
                             items(mailbox) { item ->
                                 Text(
                                     text = item.title,
@@ -133,12 +170,56 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+
                         if (error != null) {
                             Text(text = "錯誤：$error", color = MaterialTheme.colorScheme.error)
                         }
                     }
+
+                    BannerAd(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             }
         }
     }
 }
+
+@Composable
+private fun BannerAd(modifier: Modifier = Modifier) {
+    AndroidView(modifier = modifier, factory = { ctx ->
+        AdView(ctx).apply {
+            setAdSize(AdSize.BANNER)
+            adUnitId = "ca-app-pub-3940256099942544/6300978111" // 測試版位 ID，請替換成正式 ID
+            loadAd(AdRequest.Builder().build())
+        }
+    })
+}
+@Preview(showBackground = true, name = "Light Theme")
+@Composable
+fun LightPreview() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(text = "主題顏色示例", color = MaterialTheme.colorScheme.primary)
+            Text(text = "錯誤顏色示例", color = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "Dark Theme")
+@Composable
+fun DarkPreview() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(text = "主題顏色示例", color = MaterialTheme.colorScheme.primary)
+            Text(text = "錯誤顏色示例", color = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+</insert_content>

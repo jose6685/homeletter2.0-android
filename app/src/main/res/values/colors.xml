@@ -15,4 +15,8 @@
 -->
 <resources>
     <color name="shortcut_background">#F5F5F5</color>
+    <color name="primary_color">#6A5ACD</color> <!-- 主題顏色 -->
+    <color name="background_color">#FFFFFF</color> <!-- 背景顏色 -->
+    <color name="button_color">#007bff</color> <!-- 按鈕顏色 -->
+    <color name="error_color">#FF0000</color> <!-- 錯誤顏色 -->
 </resources>

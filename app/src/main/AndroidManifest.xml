@@ -11,6 +11,12 @@
         android:label="@string/appName"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
+        <!-- AdMob App ID（請換成正式 App ID） -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713" />
+
+        <!-- 將 LAUNCHER 還原為原生 Compose 的 MainActivity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -18,7 +24,6 @@
             android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

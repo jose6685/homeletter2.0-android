@@ -19,5 +19,10 @@ public class Application extends android.app.Application {
   @Override
   public void onCreate() {
     super.onCreate();
+    // 初始化 Google Mobile Ads SDK（AdMob）
+    try {
+      com.google.android.gms.ads.MobileAds.initialize(this);
+    } catch (Throwable ignored) {
+    }
   }
 }

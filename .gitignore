@@ -24,3 +24,13 @@ backend/
 homeletter-twa/
 android-platform-tools/
 *.zip
+# APKs and bundles
+*.apk
+*.apks
+# Logs
+*.log
+# Extracted APKs directory
+apks_extracted/
+# Bundletool jar (root and scripts/)
+bundletool-all.jar
+scripts/bundletool-all.jar
